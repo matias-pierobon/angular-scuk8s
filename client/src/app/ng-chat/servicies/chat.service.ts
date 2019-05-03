@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { Message } from '../models/message.interface';
 import { User } from '../models/user.interface';
 
@@ -9,7 +9,9 @@ import { User } from '../models/user.interface';
 })
 export class ChatService {
   private ws: WebSocket;
-  private messages: BehaviorSubject<Message> = new BehaviorSubject(null);
+  private messages: Subject<Message> = new Subject();
+  private connections: Subject<User> = new Subject();
+  private disconnections: Subject<User> = new Subject();
   private users: BehaviorSubject<User[]> = new BehaviorSubject([]);
 
   constructor() {
@@ -25,23 +27,33 @@ export class ChatService {
     this.ws.send(message);
   }
 
+  public getConnections() {
+    return this.connections.asObservable();
+  }
+
+  public getDisconnections() {
+    return this.disconnections.asObservable();
+  }
+
   public getMessages() {
-    this.messages.asObservable();
+    return this.messages.asObservable();
   }
 
   public getUsers() {
-    this.users.asObservable();
+    return this.users.asObservable();
   }
 
   private onMessage(message: Message) {
     switch (message.type) {
       case 'CONNECT':
         this.users.next([...this.users.value, message.user]);
+        this.connections.next(message.user);
         break;
       case 'DISCONNECT':
         this.users.next(
           this.users.value.filter(user => user.name !== message.user.name)
         );
+        this.disconnections.next(message.user);
         break;
       case 'NEW_MESSAGE':
         this.messages.next(message);
