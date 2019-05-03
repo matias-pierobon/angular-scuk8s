@@ -1,9 +1,10 @@
-FROM node
+FROM node:11
 
 RUN mkdir /app
 WORKDIR /app
 
-RUN npm install ws
+COPY package.json package-lock.json /app/
+RUN npm install
 
 COPY . /app
 

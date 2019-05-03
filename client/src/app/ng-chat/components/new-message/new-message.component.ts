@@ -1,15 +1,18 @@
 import { Component, OnInit } from '@angular/core';
+import { ChatService } from '../../services/chat.service';
 
 @Component({
   selector: 'app-new-message',
   templateUrl: './new-message.component.html',
   styleUrls: ['./new-message.component.scss']
 })
-export class NewMessageComponent implements OnInit {
+export class NewMessageComponent {
+  public value = '';
 
-  constructor() { }
+  constructor(private chat: ChatService) {}
 
-  ngOnInit() {
+  submit() {
+    this.chat.send(this.value);
+    this.value = '';
   }
-
 }
